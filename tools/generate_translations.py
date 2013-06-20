@@ -150,7 +150,10 @@ def main():
         for fformat in formats:
             for direction in ['import', 'export']:
                 ports = format_maps[fformat][direction]
-                for map_set in ports:
+                pkeys = ports.keys()
+                pkeys.sort(reverse=True)
+                for map_set in pkeys:
+#                for map_set in ports:
                     print direction
                     print map_set
                     if map_set == 'NoneType':
