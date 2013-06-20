@@ -29,6 +29,7 @@ nosetests.xml
 # Translations
 *.mo
 outputs/*
+tools/nohup.out
 
 # Mr Developer
 .mr.developer.cfg
