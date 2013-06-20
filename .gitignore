@@ -30,6 +30,8 @@ nosetests.xml
 *.mo
 outputs/*
 tools/nohup.out
+outputs/*
+staticInputs/*
 
 # Mr Developer
 .mr.developer.cfg
