@@ -28,6 +28,8 @@ nosetests.xml
 
 # Translations
 *.mo
+tools/metocean
+tools/nohup.out
 
 # Mr Developer
 .mr.developer.cfg
