@@ -53,12 +53,27 @@ CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
                                            'unit'])
 '''
 
+grib_tuple_def = '''
+G2param = collections.namedtuple('G2param', ['edition', 'discipline',
+                                             'category', 'number'])
+
+G1Lparam = collections.namedtuple('G1Lparam', ['edition', 't2version', 'centre',
+                                               'iParam'])
+
+DimensionCoordinate = collections.namedtuple('DimensionCoordinate',
+                                            ['standard_name', 'units', 'points'])
+
+'''
+
+
 
 end_dictionary = '''
 }
 '''
 
-BUILT_FILES = {'../outputs/um_cf_map.py': [icol, cf_tuple_def],}
+BUILT_FILES = {'../outputs/um_cf_map.py': [icol, cf_tuple_def],
+               '../outputs/_grib_cf_map.py': [icol, grib_tuple_def,
+                                              cf_tuple_def],}
 
 
 def str_line_sort(st):
@@ -80,7 +95,8 @@ def dict_line_sort(st):
 
 iris_format = '<http://www.metarelate.net/metOcean/format/cf>'
 
-formats = ['<http://www.metarelate.net/metOcean/format/um>']
+formats = ['<http://www.metarelate.net/metOcean/format/um>',
+           '<http://www.metarelate.net/metOcean/format/grib>']
 
 
 
