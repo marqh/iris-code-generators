@@ -16,7 +16,8 @@
 # along with iris-code-generators.  If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
-from time import time
+import time
+from contextlib import contextmanager
 
 import metocean.queries as moq
 import metocean.fuseki as fuseki
@@ -77,6 +78,11 @@ def dict_line_sort(st):
     return st
 
 
+@contextmanager
+def atimer(name):
+    start = time.time()
+    yield
+    print '{}:'.format(name), '{}s'.format(int(time.time() - start))
 
 iris_format = '<http://www.metarelate.net/metOcean/format/cf>'
 
@@ -107,39 +113,31 @@ def main():
     creates the translations encodings in ../outputs
     
     """
-    start_time = time()
     with fuseki.FusekiServer(3333) as fu_p:
         # generate translations
         format_maps = {}
         for fformat in formats:
-            rtime = time()
             print fformat, ' retrieving: '
             format_maps[fformat] = {'import':{}, 'export':{}}
-            ret_start_time = time()
-            imports = fu_p.retrieve_mappings(fformat, iris_format)
-            ret_time = time()
-            print 'imp retrieve_mappings: {} s'.format(int(ret_time - ret_start_time))
-            imp_maps = [mappings.make_mapping(amap, fu_p) for amap in imports]
-            makem_time = time()
-            print 'imp make_mappings: {} s'.format(int(makem_time-ret_time))
-            imp_maps.sort(key=type)
-            for g_type, group in itertools.groupby(imp_maps, key=type):
-                format_maps[fformat]['import'][g_type.__name__] = list(group)
-            ret_start_time = time()
-            exports = fu_p.retrieve_mappings(iris_format, fformat)
-            ret_time = time()
-            print 'exp retrieve_mappings: {} s'.format(int(ret_time - ret_start_time))
-            exp_maps = [mappings.make_mapping(amap, fu_p) for amap in exports]
-            makem_time = time()
-            print 'exp make_mappings: {} s'.format(int(makem_time-ret_time))
-            exp_maps.sort(key=type)
-            for g_type, group in itertools.groupby(exp_maps, key=type):
-                format_maps[fformat]['export'][g_type.__name__] = list(group)
-            ftime = time()
-            
+            with atimer('imp retrieve_mappings'):
+                # return the list of valid mapping from fformat to CF
+                imports = fu_p.retrieve_mappings(fformat, iris_format)
+            with atimer('imp make_mappings'):
+                # identify types for these mappings
+                imp_maps = [mappings.make_mapping(amap, fu_p) for amap in imports]
+                imp_maps.sort(key=type)
+                for g_type, group in itertools.groupby(imp_maps, key=type):
+                    format_maps[fformat]['import'][g_type.__name__] = list(group)
+            with atimer('exp retrieve mappings'):
+                # return the list of valid mapping from CF to fformat
+                exports = fu_p.retrieve_mappings(iris_format, fformat)
+            with atimer('exp make_mappings'):
+                # identify types for these mappings
+                exp_maps = [mappings.make_mapping(amap, fu_p) for amap in exports]
+                exp_maps.sort(key=type)
+                for g_type, group in itertools.groupby(exp_maps, key=type):
+                    format_maps[fformat]['export'][g_type.__name__] = list(group)
             print len(imports), ' imports, ', len(exports), 'exports'
-            print str(int(ftime - rtime)), 's'
-            rtime = ftime
         for afile in BUILT_FILES:
             f = open(afile, 'w')
             f.write(header)
@@ -149,41 +147,38 @@ def main():
 
         for fformat in formats:
             for direction in ['import', 'export']:
-                ports = format_maps[fformat][direction]
-                pkeys = ports.keys()
-                pkeys.sort(reverse=True)
-                for map_set in pkeys:
-#                for map_set in ports:
-                    print direction
-                    print map_set
-                    if map_set == 'NoneType':
-                        ec = 'Some {} {} mappings not categorised'
-                        ec = ec.format(fformat, direction)
-                        print ec
-                    else:
-                        if ports[map_set][0].in_file not in BUILT_FILES:
-                            ec = '{} writing to unmanaged file {}'
-                            ec = ec.format(map_set, ports[map_set][0].in_file)
-                            raise ValueError(ec)
-                        map_str = ''
-                        for port_mappings in ports[map_set]:
-                            map_str += port_mappings.encode()
-                        if ports[map_set][0].to_sort:
-                            map_str = dict_line_sort(map_str)
-                        if ports[map_set][0].container:
-                            map_str = ports[map_set][0].container + map_str
-                        if ports[map_set][0].closure:
-                            map_str += ports[map_set][0].closure
-                        with open(ports[map_set][0].in_file, 'a') as in_file:
-                            in_file.write(map_str)
-            fftime = time()
-            print fformat, ' writing: ', str(int(fftime - ftime)), 's'
-            ftime = fftime
-    end_time = time()
-    print 'total time: ', str(int(end_time - start_time)), 's'
+                with atimer('writing {}, {}'.format(fformat, direction)):
+                    ports = format_maps[fformat][direction]
+                    pkeys = ports.keys()
+                    pkeys.sort(reverse=True)
+                    for map_set in pkeys:
+                        print direction
+                        print map_set
+                        if map_set == 'NoneType':
+                            ec = 'Some {} {} mappings not categorised'
+                            ec = ec.format(fformat, direction)
+                            print ec
+                        else:
+                            if ports[map_set][0].in_file not in BUILT_FILES:
+                                ec = '{} writing to unmanaged file {}'
+                                ec = ec.format(map_set,
+                                               ports[map_set][0].in_file)
+                                raise ValueError(ec)
+                            map_str = ''
+                            for port_mappings in ports[map_set]:
+                                map_str += port_mappings.encode()
+                            if ports[map_set][0].to_sort:
+                                map_str = dict_line_sort(map_str)
+                            if ports[map_set][0].container:
+                                map_str = ports[map_set][0].container + map_str
+                            if ports[map_set][0].closure:
+                                map_str += ports[map_set][0].closure
+                            with open(ports[map_set][0].in_file, 'a') as ifile:
+                                ifile.write(map_str)
 
 
 if __name__ == '__main__':
-    main()
+    with atimer('main'):
+        main()
 
 
