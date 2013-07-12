@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with iris-code-generators.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Processing of metarelate content to provide Iris encodings for translation
+
+"""
+
 
 import itertools
 import time
@@ -23,7 +28,7 @@ import metocean.queries as moq
 import metocean.fuseki as fuseki
 import translator.mappings as mappings
 
-header = """# (C) British Crown Copyright 2013, Met Office
+HEADER = """# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -41,25 +46,25 @@ header = """# (C) British Crown Copyright 2013, Met Office
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-header += '''
+HEADER += '''
 # DO NOT EDIT: AUTO-GENERATED
 
 '''
 
 
-icol = 'import collections\n'
+ICOL = 'import collections\n'
 
-cf_tuple_def = '''
+CF_TUPLE_DEF = '''
 CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
                                            'unit'])
 '''
 
 
-end_dictionary = '''
-}
-'''
+# END_DICT = '''
+# }
+# '''
 
-BUILT_FILES = {'../outputs/um_cf_map.py': [icol, cf_tuple_def], }
+BUILT_FILES = {'../outputs/um_cf_map.py': [ICOL, CF_TUPLE_DEF], }
 
 
 def str_line_sort(st):
@@ -72,7 +77,8 @@ def str_line_sort(st):
 def dict_line_sort(st):
     sort_st = st.split('\n')[0:-2]
     try:
-        sort_st.sort(key=lambda str: int(str.split(':')[0].strip().replace('"', '')))
+        sort_st.sort(
+            key=lambda str: int(str.split(':')[0].strip().replace('"', '')))
         st = '\n'.join(sort_st)
     except ValueError:
         st = str_line_sort(st)
@@ -143,7 +149,7 @@ def main():
             print len(imports), ' imports, ', len(exports), 'exports'
         for afile in BUILT_FILES:
             f = open(afile, 'w')
-            f.write(header)
+            f.write(HEADER)
             for extras in BUILT_FILES[afile]:
                 f.write(extras)
             f.close()
