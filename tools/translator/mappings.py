@@ -14,8 +14,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with iris-code-generators. If not, see <http://www.gnu.org/licenses/>.
+"""
+Classes for types of mapping, with a factory for creating instances
 
-from concepts import *
+"""
+
+
+import concepts
 
 
 def make_mapping(mapping, fu_p):
@@ -23,22 +28,37 @@ def make_mapping(mapping, fu_p):
     Mapping object factory
     selects the appropriate subclass for the inputs
     """
-    built_mappings = []
-    for mapping_type in Mapping.__subclasses__():
-        source = make_concept(mapping.get('mr:source'), fu_p)
-        target = make_concept(mapping.get('mr:target'), fu_p)
-        if mapping_type.type_match(source, target):
-            built_mappings.append(mapping_type(mapping, source, target, fu_p))
-    if len(built_mappings) != 1:
-        if len(built_mappings) == 0:
+    source = concepts.make_concept(mapping.get('mr:source'), fu_p)
+    target = concepts.make_concept(mapping.get('mr:target'), fu_p)
+    matched_types = [mapping_type 
+                     for mapping_type in Mapping.__subclasses__ 
+                     if type.type_match(source, target)]
+    if len(matched_types) != 1:
+        if len(matched_types) == 0:
             print 'source: ', source
             print 'target: ', target
-#            raise ValueError('no matching Mapping type found')
-            built_mappings = [None]
+            mapping = None
         else:
             raise ValueError('multiple matching Mapping types found')
-            built_mappings = [None]
-    return built_mappings[0]
+            mapping = None
+    else:
+        mapping = matched_types[0](mapping, source, target, fu_p)
+    return mapping
+    # built_mappings = []
+    # for mapping_type in Mapping.__subclasses__():
+    #     source = concepts.make_concept(mapping.get('mr:source'), fu_p)
+    #     target = concepts.make_concept(mapping.get('mr:target'), fu_p)
+    #     if mapping_type.type_match(source, target):
+    #         built_mappings.append(mapping_type(mapping, source, target, fu_p))
+    # if len(built_mappings) != 1:
+    #     if len(built_mappings) == 0:
+    #         print 'source: ', source
+    #         print 'target: ', target
+    #         built_mappings = [None]
+    #     else:
+    #         raise ValueError('multiple matching Mapping types found')
+    #         built_mappings = [None]
+    # return built_mappings[0]
 
 
 class Mapping(object):
@@ -87,8 +107,8 @@ class StashCFMapping(Mapping):
 
     @staticmethod
     def type_match(source, target):
-        if isinstance(source, StashConcept) and \
-           isinstance(target, CFPhenomDefConcept):
+        if isinstance(source, concepts.StashConcept) and \
+           isinstance(target, concepts.CFPhenomDefConcept):
             typematch = True
         else:
             typematch = False
@@ -123,8 +143,8 @@ class FieldcodeCFMapping(Mapping):
 
     @staticmethod
     def type_match(source, target):
-        if isinstance(source, FieldcodeConcept) and \
-           isinstance(target, CFPhenomDefConcept):
+        if isinstance(source, concepts.FieldcodeConcept) and \
+           isinstance(target, concepts.CFPhenomDefConcept):
             typematch = True
         else:
             typematch = False
@@ -161,8 +181,8 @@ class CFFieldcodeMapping(Mapping):
 
     @staticmethod
     def type_match(source, target):
-        if isinstance(source, CFPhenomDefConcept) and \
-           isinstance(target, FieldcodeConcept):
+        if isinstance(source, concepts.CFPhenomDefConcept) and \
+           isinstance(target, concepts.FieldcodeConcept):
             typematch = True
         else:
             typematch = False

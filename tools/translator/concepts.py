@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with iris-code-generators. If not, see <http://www.gnu.org/licenses/>.
+"""
+Classes for types of metarelate concept, with a factory for creating instances
+
+"""
+
 
 import metocean.queries as moq
 
