@@ -42,7 +42,7 @@ header = """# (C) British Crown Copyright 2013, Met Office
 """
 
 header += '''
-# DO NOT EDIT: AUTO-GENERATED 
+# DO NOT EDIT: AUTO-GENERATED
 
 '''
 
@@ -59,7 +59,7 @@ end_dictionary = '''
 }
 '''
 
-BUILT_FILES = {'../outputs/um_cf_map.py': [icol, cf_tuple_def],}
+BUILT_FILES = {'../outputs/um_cf_map.py': [icol, cf_tuple_def], }
 
 
 def str_line_sort(st):
@@ -68,10 +68,11 @@ def str_line_sort(st):
     st = '\n'.join(sort_st)
     return st
 
+
 def dict_line_sort(st):
     sort_st = st.split('\n')[0:-2]
     try:
-        sort_st.sort(key=lambda str: int(str.split(':')[0].strip().replace('"','')))
+        sort_st.sort(key=lambda str: int(str.split(':')[0].strip().replace('"', '')))
         st = '\n'.join(sort_st)
     except ValueError:
         st = str_line_sort(st)
@@ -89,17 +90,17 @@ iris_format = '<http://www.metarelate.net/metOcean/format/cf>'
 formats = ['<http://www.metarelate.net/metOcean/format/um>']
 
 
-
 def bodc_udunit_fix(units):
     """
-    helper function to update syntax in use in BODC server to conform to udunits
-    
+    helper function to update syntax in use in BODC server to conform
+    to udunits strings
+
     """
     units = units.strip('"')
-    units = units.replace('Dmnless','1')
-    units = units.replace('#','1')
-    units = units.replace('deg','degree')
-    units = units.replace('degreeree','degree')
+    units = units.replace('Dmnless', '1')
+    units = units.replace('#', '1')
+    units = units.replace('deg', 'degree')
+    units = units.replace('degreeree', 'degree')
     if units.startswith("'canonical_units': '/"):
         denom = units.split("'canonical_units': '/")[-1]
         units = "'canonical_units': '1/" + denom
@@ -111,32 +112,34 @@ def bodc_udunit_fix(units):
 def main():
     """
     creates the translations encodings in ../outputs
-    
+
     """
     with fuseki.FusekiServer(3333) as fu_p:
         # generate translations
         format_maps = {}
         for fformat in formats:
             print fformat, ' retrieving: '
-            format_maps[fformat] = {'import':{}, 'export':{}}
+            format_maps[fformat] = {'import': {}, 'export': {}}
             with atimer('imp retrieve_mappings'):
                 # return the list of valid mapping from fformat to CF
                 imports = fu_p.retrieve_mappings(fformat, iris_format)
             with atimer('imp make_mappings'):
                 # identify types for these mappings
-                imp_maps = [mappings.make_mapping(amap, fu_p) for amap in imports]
+                imp_maps = [mappings.make_mapping(amap, fu_p) for
+                            amap in imports]
                 imp_maps.sort(key=type)
-                for g_type, group in itertools.groupby(imp_maps, key=type):
-                    format_maps[fformat]['import'][g_type.__name__] = list(group)
+                for g_type, grp in itertools.groupby(imp_maps, key=type):
+                    format_maps[fformat]['import'][g_type.__name__] = list(grp)
             with atimer('exp retrieve mappings'):
                 # return the list of valid mapping from CF to fformat
                 exports = fu_p.retrieve_mappings(iris_format, fformat)
             with atimer('exp make_mappings'):
                 # identify types for these mappings
-                exp_maps = [mappings.make_mapping(amap, fu_p) for amap in exports]
+                exp_maps = [mappings.make_mapping(amap, fu_p)
+                            for amap in exports]
                 exp_maps.sort(key=type)
-                for g_type, group in itertools.groupby(exp_maps, key=type):
-                    format_maps[fformat]['export'][g_type.__name__] = list(group)
+                for g_type, grp in itertools.groupby(exp_maps, key=type):
+                    format_maps[fformat]['export'][g_type.__name__] = list(grp)
             print len(imports), ' imports, ', len(exports), 'exports'
         for afile in BUILT_FILES:
             f = open(afile, 'w')
@@ -180,5 +183,3 @@ def main():
 if __name__ == '__main__':
     with atimer('main'):
         main()
-
-

@@ -19,6 +19,7 @@ import metocean.queries as moq
 
 OPEQ = '<http://www.openmath.org/cd/relation1.xhtml#eq>'
 
+
 def make_concept(definition, fu_p):
     """
     Concept object factory
@@ -48,12 +49,14 @@ class Concept(object):
     """
     def __init__(self, definition, fu_p):
         return NotImplemented
+
     def notation(self, direction):
         ## direction should be 'test' or 'assign' only
         return NotImplemented
+
     def type_match(definition, fu_p):
         return NotImplemented
-    
+
 
 class StashConcept(Concept):
     """
@@ -64,10 +67,12 @@ class StashConcept(Concept):
         self.properties = definition['mr:hasProperty']
         self.id = definition['component']
         self.fu_p = fu_p
+
     def notation(self, direction=None):
         val = self.properties[0].get('rdf:value')
         stash = moq.get_label(self.fu_p, val)
         return stash
+
     @staticmethod
     def type_match(definition, fu_p):
         STASHC = '<http://reference.metoffice.gov.uk/def/um/stash/concept/'
@@ -110,10 +115,12 @@ class FieldcodeConcept(Concept):
         self.properties = definition['mr:hasProperty']
         self.id = definition['component']
         self.fu_p = fu_p
+
     def notation(self, direction=None):
         val = self.properties[0].get('rdf:value')
         fcode = moq.get_label(self.fu_p, val)
         return fcode
+
     @staticmethod
     def type_match(definition, fu_p):
         FIELDC = '<http://reference.metoffice.gov.uk/def/um/fieldcode/'
@@ -147,7 +154,6 @@ class FieldcodeConcept(Concept):
         return fieldcode
 
 
-
 class CFPhenomDefConcept(Concept):
     """
     a concept which is only defining a CF Field's base phenomenon
@@ -157,6 +163,7 @@ class CFPhenomDefConcept(Concept):
         self.properties = definition['mr:hasProperty']
         self.id = definition['component']
         self.fu_p = fu_p
+
     def notation(self, direction=None):
         cfsn = None
         lname = None
@@ -171,6 +178,7 @@ class CFPhenomDefConcept(Concept):
             elif moq.get_label(self.fu_p, p.get('mr:name')) == '"units"':
                 units = moq.get_label(self.fu_p, p.get('rdf:value'))
         return cfsn, lname, units
+
     @staticmethod
     def type_match(definition, fu_p):
         fformat = '<http://www.metarelate.net/metOcean/format/cf>'
@@ -197,11 +205,10 @@ class CFPhenomDefConcept(Concept):
             eitheror = set(('<http://def.cfconventions.org/datamodel/standard_name>',
                             '<http://def.cfconventions.org/datamodel/long_name>'))
             if set(define.keys()).issuperset(required) and \
-                set(define.keys()).issubset(required.union(eitheror)):
+               set(define.keys()).issubset(required.union(eitheror)):
                 phenom = True
             else:
                 phenom = False
         else:
             phenom = False
         return phenom
-
