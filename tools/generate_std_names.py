@@ -2,9 +2,9 @@
 #
 # This file is part of iris-code-generators.
 #
-# iris-code-generators is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
+# iris-code-generators is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # iris-code-generators is distributed in the hope that it will be useful,
@@ -63,22 +63,28 @@ https://github.com/scitools/iris-code-generators
 """
 
 
+
+
 STD_NAMES = '''.lstrip()
 
 
 def process_name_table(tree, element_name, *child_elements):
     """
-    Yields a series of dictionaries with the key being the id of the entry element and the value containing
-    another dictionary mapping other attributes of the standard name to their values, e.g. units, description, grib value etc.
+    Yields a series of dictionaries with the key being the id of the entry
+    element and the value containing another dictionary mapping other
+    attributes of the standard name to their values,
+    e.g. units, description, grib value etc.
+
     """
     for elem in tree.iterfind(element_name):
         sub_section = {}
-        
+
         for child_elem in child_elements:
             found_elem = elem.find(child_elem)
-            sub_section[child_elem] = found_elem.text if found_elem is not None else None
+            c_el = found_elem.text if found_elem is not None else None
+            sub_section[child_elem] = c_el
 
-        yield {elem.get("id") : sub_section}
+        yield {elem.get("id"): sub_section}
 
 
 def to_dict(infile, outfile):
@@ -95,8 +101,8 @@ def to_dict(infile, outfile):
 
     for key, valued in aliases.iteritems():
         values.update({
-                key : {'canonical_units' : values.get(valued['entry_id']).get('canonical_units')}
-            })
+            key: {'canonical_units':
+                  values.get(valued['entry_id']).get('canonical_units')}})
 
     outfile.write(STD_VALUES_FILE_TEMPLATE + pprint.pformat(values))
 

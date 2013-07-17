@@ -28,15 +28,15 @@ def make_mapping(mapping, fu_p):
     Mapping object factory
     selects the appropriate subclass for the provided inputs
     creates the correct instance of a Mapping object
-    
+
     Returns:
         an instance of a Mapping or None
 
     """
     source = concepts.make_concept(mapping.get('mr:source'), fu_p)
     target = concepts.make_concept(mapping.get('mr:target'), fu_p)
-    matched_types = [mapping_type 
-                     for mapping_type in Mapping.__subclasses__() 
+    matched_types = [mapping_type
+                     for mapping_type in Mapping.__subclasses__()
                      if mapping_type.type_match(source, target)]
     if len(matched_types) != 1:
         if len(matched_types) == 0:
@@ -146,7 +146,7 @@ class CFFieldcodeMapping(Mapping):
     """
     a mapping object, obtained from the metarelate repository
     defining a source concept, a target concept and any mapped values
-    for CF standard name and unit translating to a UM field code 
+    for CF standard name and unit translating to a UM field code
 
     """
     in_file = '../outputs/um_cf_map.py'
