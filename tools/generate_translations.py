@@ -147,7 +147,7 @@ def main():
                     for map_type in pkeys:
                         print direction
                         print map_type.__name__
-                        if map_type is type(None):
+                        if map_type is None:
                             ec = 'Some {} {} mappings not categorised'
                             ec = ec.format(fformat, direction)
                             print ec

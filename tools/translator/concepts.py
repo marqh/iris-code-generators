@@ -30,7 +30,7 @@ def make_concept(definition, fu_p):
     Concept object factory
     selects the appropriate subclass for the provided inputs
     creates the correct instance of a Concept object
-    
+
     Returns:
         an instance of a Concept or None
 
@@ -131,7 +131,7 @@ class FieldcodeConcept(Concept):
             val = properties[0].get('rdf:value')
             fieldval = val and val.startswith(FIELDC)
             name = properties[0].get('mr:name')
-            fieldname = name and name == F3FIELD 
+            fieldname = name and name == F3FIELD
             operator = properties[0].get('mr:operator')
             op_eq = operator and operator == OPEQ
             fieldcode = fieldval and fieldname and op_eq
