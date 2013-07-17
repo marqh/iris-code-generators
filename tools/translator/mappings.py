@@ -26,39 +26,30 @@ import concepts
 def make_mapping(mapping, fu_p):
     """
     Mapping object factory
-    selects the appropriate subclass for the inputs
+    selects the appropriate subclass for the provided inputs
+    creates the correct instance of a Mapping object
+    
+    Returns:
+        an instance of a Mapping or None
+
     """
     source = concepts.make_concept(mapping.get('mr:source'), fu_p)
     target = concepts.make_concept(mapping.get('mr:target'), fu_p)
     matched_types = [mapping_type 
-                     for mapping_type in Mapping.__subclasses__ 
-                     if type.type_match(source, target)]
+                     for mapping_type in Mapping.__subclasses__() 
+                     if mapping_type.type_match(source, target)]
     if len(matched_types) != 1:
         if len(matched_types) == 0:
             print 'source: ', source
             print 'target: ', target
             mapping = None
         else:
-            raise ValueError('multiple matching Mapping types found')
+            ec = 'multiple matching Mapping types found {}'
+            print ec.format(','.join(matched_types))
             mapping = None
     else:
         mapping = matched_types[0](mapping, source, target, fu_p)
     return mapping
-    # built_mappings = []
-    # for mapping_type in Mapping.__subclasses__():
-    #     source = concepts.make_concept(mapping.get('mr:source'), fu_p)
-    #     target = concepts.make_concept(mapping.get('mr:target'), fu_p)
-    #     if mapping_type.type_match(source, target):
-    #         built_mappings.append(mapping_type(mapping, source, target, fu_p))
-    # if len(built_mappings) != 1:
-    #     if len(built_mappings) == 0:
-    #         print 'source: ', source
-    #         print 'target: ', target
-    #         built_mappings = [None]
-    #     else:
-    #         raise ValueError('multiple matching Mapping types found')
-    #         built_mappings = [None]
-    # return built_mappings[0]
 
 
 class Mapping(object):
@@ -84,6 +75,7 @@ class StashCFMapping(Mapping):
     """
     a mapping object, obtained from the metarelate repository
     defining a source concept, a target concept and any mapped values
+    for a UM STASH code translating to a CF standard name and unit
 
     """
     in_file = '../outputs/um_cf_map.py'
@@ -119,6 +111,7 @@ class FieldcodeCFMapping(Mapping):
     """
     a mapping object, obtained from the metarelate repository
     defining a source concept, a target concept and any mapped values
+    for a UM field code translating to a CF standard name and unit
 
     """
     in_file = '../outputs/um_cf_map.py'
@@ -129,13 +122,11 @@ class FieldcodeCFMapping(Mapping):
     def __init__(self, amap, source, target, fu_p):
         self.source = source
         self.target = target
-        #self.valuemaps = amap.get('mr:hasValueMaps')
         self.fu_p = fu_p
 
     def encode(self):
         fc = self.source.notation()
         cfsname, lname, units = self.target.notation()
-        #lname
         str_elem = '\t{fc} : CFname({cfsname}, {lname}, {units}),\n'
         str_elem = str_elem.format(fc=fc, cfsname=cfsname,
                                    lname=lname, units=units)
@@ -155,6 +146,7 @@ class CFFieldcodeMapping(Mapping):
     """
     a mapping object, obtained from the metarelate repository
     defining a source concept, a target concept and any mapped values
+    for CF standard name and unit translating to a UM field code 
 
     """
     in_file = '../outputs/um_cf_map.py'
@@ -165,7 +157,6 @@ class CFFieldcodeMapping(Mapping):
     def __init__(self, amap, source, target, fu_p):
         self.source = source
         self.target = target
-        #self.valuemaps = amap.get('mr:hasValueMaps')
         self.fu_p = fu_p
 
     def encode(self):

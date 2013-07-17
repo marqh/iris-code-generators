@@ -28,24 +28,29 @@ OPEQ = '<http://www.openmath.org/cd/relation1.xhtml#eq>'
 def make_concept(definition, fu_p):
     """
     Concept object factory
-    selects the appropriate subclass for the inputs
-    """
+    selects the appropriate subclass for the provided inputs
+    creates the correct instance of a Concept object
+    
+    Returns:
+        an instance of a Concept or None
 
-    built_concepts = []
-    for concept_type in Concept.__subclasses__():
-        if concept_type.type_match(definition, fu_p):
-            built_concepts.append(concept_type(definition, fu_p))
-    if len(built_concepts) != 1:
-        if len(built_concepts) == 0:
+    """
+    matched_types = [concept_type
+                     for concept_type in Concept.__subclasses__()
+                     if concept_type.type_match(definition, fu_p)]
+    if len(matched_types) != 1:
+        if len(matched_types) == 0:
             ec = 'no matching Concept type found \n{}'.format(definition)
-            #raise ValueError(ec)
-            built_concepts = [None]
+            print ec
+            built_concept = None
         else:
             ec = 'multiple matching Concept types found\n {}'
             ec = ec.format(built_concepts)
-            raise ValueError(ec)
-            built_concepts = [None]
-    return built_concepts[0]
+            print ec
+            built_concept = None
+    else:
+        built_concept = matched_types[0](definition, fu_p)
+    return built_concept
 
 
 class Concept(object):
@@ -88,24 +93,12 @@ class StashConcept(Concept):
         components = definition.get('mr:hasComponent', [])
         if ff and len(properties) == 1 and len(components) == 0:
             val = properties[0].get('rdf:value')
-            if val:
-                stashval = val.startswith(STASHC)
-            else:
-                stashval = False
+            stashval = val and val.startswith(STASHC)
             name = properties[0].get('mr:name')
-            if name:
-                stashname = name == F3STASH
-            else:
-                stashname = False
+            stashname = name and name == F3STASH
             operator = properties[0].get('mr:operator')
-            if operator:
-                op_eq = operator = OPEQ
-            else:
-                op_eq = False
-            if stashval and stashname and op_eq:
-                stash = True
-            else:
-                stash = False
+            op_eq = operator and operator == OPEQ
+            stash = stashval and stashname and op_eq
         else:
             stash = False
         return stash
@@ -136,24 +129,12 @@ class FieldcodeConcept(Concept):
         components = definition.get('mr:hasComponent', [])
         if ff and len(properties) == 1 and len(components) == 0:
             val = properties[0].get('rdf:value')
-            if val:
-                fieldval = val.startswith(FIELDC)
-            else:
-                fieldval = False
+            fieldval = val and val.startswith(FIELDC)
             name = properties[0].get('mr:name')
-            if name:
-                fieldname = name == F3FIELD
-            else:
-                fieldname = False
+            fieldname = name and name == F3FIELD 
             operator = properties[0].get('mr:operator')
-            if operator:
-                op_eq = operator = OPEQ
-            else:
-                op_eq = False
-            if fieldval and fieldname and op_eq:
-                fieldcode = True
-            else:
-                fieldcode = False
+            op_eq = operator and operator == OPEQ
+            fieldcode = fieldval and fieldname and op_eq
         else:
             fieldcode = False
         return fieldcode
@@ -174,14 +155,16 @@ class CFPhenomDefConcept(Concept):
         lname = None
         units = None
         for p in self.properties:
-            if moq.get_label(self.fu_p, p.get('mr:name')) == '"standard_name"':
-                cfsn = moq.get_label(self.fu_p, p.get('rdf:value'))
+            prop_name = moq.get_label(self.fu_p, p.get('mr:name'))
+            prop_value = moq.get_label(self.fu_p, p.get('rdf:value'))
+            if prop_name == '"standard_name"':
+                cfsn = prop_value
                 if cfsn.startswith('<'):
                     cfsn = None
-            elif moq.get_label(self.fu_p, p.get('mr:name')) == '"long_name"':
-                lname = p.get('rdf:value')
-            elif moq.get_label(self.fu_p, p.get('mr:name')) == '"units"':
-                units = moq.get_label(self.fu_p, p.get('rdf:value'))
+            elif prop_name == '"long_name"':
+                lname = prop_value
+            elif prop_name == '"units"':
+                units = prop_value
         return cfsn, lname, units
 
     @staticmethod
@@ -197,23 +180,15 @@ class CFPhenomDefConcept(Concept):
                 name = prop.get('mr:name', '')
                 value = prop.get('rdf:value')
                 if op and value and op == OPEQ:
-                    # name_label = moq.get_label(fu_p, name)
-                    # value_label = moq.get_label(fu_p, value)
-                    # if not define.get(name_label):
-                    #     define[name_label] = value_label
                     if not define.get(name):
                         define[name] = value
-            # required = set(('"units"', '"type"'))
-            # eitheror = set(('"standard_name"', '"long_name"'))
-            required = set(('<http://def.cfconventions.org/datamodel/units>',
-                            '<http://def.cfconventions.org/datamodel/type>'))
-            eitheror = set(('<http://def.cfconventions.org/datamodel/standard_name>',
-                            '<http://def.cfconventions.org/datamodel/long_name>'))
-            if set(define.keys()).issuperset(required) and \
-               set(define.keys()).issubset(required.union(eitheror)):
-                phenom = True
-            else:
-                phenom = False
+            cfc = 'http://def.cfconventions.org/datamodel/'
+            required = set(('<{}units>'.format(cfc),
+                            '<{}type>'.format(cfc)))
+            eitheror = set(('<{}standard_name>'.format(cfc),
+                            '<{}long_name>'.format(cfc)))
+            phenom = (set(define.keys()) >= required and
+                      set(define.keys()) < (required | eitheror))
         else:
             phenom = False
         return phenom

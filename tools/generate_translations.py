@@ -60,14 +60,11 @@ CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
 '''
 
 
-# END_DICT = '''
-# }
-# '''
-
 BUILT_FILES = {'../outputs/um_cf_map.py': [ICOL, CF_TUPLE_DEF], }
 
 
 def str_line_sort(st):
+    """Helper function to sort a multi line string alphabetically"""
     sort_st = st.split('\n')
     sort_st.sort()
     st = '\n'.join(sort_st)
@@ -75,6 +72,10 @@ def str_line_sort(st):
 
 
 def dict_line_sort(st):
+    """Helper function to sort a multi line string numerically, if porssible,
+    then alphabetically as a reserve
+
+    """
     sort_st = st.split('\n')[0:-2]
     try:
         sort_st.sort(
@@ -87,6 +88,7 @@ def dict_line_sort(st):
 
 @contextmanager
 def atimer(name):
+    """timer context manager for monitoring processes"""
     start = time.time()
     yield
     print '{}:'.format(name), '{}s'.format(int(time.time() - start))
@@ -94,25 +96,6 @@ def atimer(name):
 iris_format = '<http://www.metarelate.net/metOcean/format/cf>'
 
 formats = ['<http://www.metarelate.net/metOcean/format/um>']
-
-
-def bodc_udunit_fix(units):
-    """
-    helper function to update syntax in use in BODC server to conform
-    to udunits strings
-
-    """
-    units = units.strip('"')
-    units = units.replace('Dmnless', '1')
-    units = units.replace('#', '1')
-    units = units.replace('deg', 'degree')
-    units = units.replace('degreeree', 'degree')
-    if units.startswith("'canonical_units': '/"):
-        denom = units.split("'canonical_units': '/")[-1]
-        units = "'canonical_units': '1/" + denom
-    ## wrong, dB should be a recognised unit
-    units = units.replace("'dB'", "'1'")
-    return units
 
 
 def main():
@@ -135,7 +118,7 @@ def main():
                             amap in imports]
                 imp_maps.sort(key=type)
                 for g_type, grp in itertools.groupby(imp_maps, key=type):
-                    format_maps[fformat]['import'][g_type.__name__] = list(grp)
+                    format_maps[fformat]['import'][g_type] = list(grp)
             with atimer('exp retrieve mappings'):
                 # return the list of valid mapping from CF to fformat
                 exports = fu_p.retrieve_mappings(iris_format, fformat)
@@ -145,7 +128,7 @@ def main():
                             for amap in exports]
                 exp_maps.sort(key=type)
                 for g_type, grp in itertools.groupby(exp_maps, key=type):
-                    format_maps[fformat]['export'][g_type.__name__] = list(grp)
+                    format_maps[fformat]['export'][g_type] = list(grp)
             print len(imports), ' imports, ', len(exports), 'exports'
         for afile in BUILT_FILES:
             f = open(afile, 'w')
@@ -155,34 +138,35 @@ def main():
             f.close()
 
         for fformat in formats:
+            # export translations to python code
             for direction in ['import', 'export']:
                 with atimer('writing {}, {}'.format(fformat, direction)):
                     ports = format_maps[fformat][direction]
                     pkeys = ports.keys()
-                    pkeys.sort(reverse=True)
-                    for map_set in pkeys:
+                    pkeys.sort(reverse=True, key=lambda acls: acls.__name__)
+                    for map_type in pkeys:
                         print direction
-                        print map_set
-                        if map_set == 'NoneType':
+                        print map_type.__name__
+                        if map_type is type(None):
                             ec = 'Some {} {} mappings not categorised'
                             ec = ec.format(fformat, direction)
                             print ec
                         else:
-                            if ports[map_set][0].in_file not in BUILT_FILES:
+                            if map_type.in_file not in BUILT_FILES:
                                 ec = '{} writing to unmanaged file {}'
-                                ec = ec.format(map_set,
-                                               ports[map_set][0].in_file)
+                                ec = ec.format(map_type,
+                                               map_type.in_file)
                                 raise ValueError(ec)
                             map_str = ''
-                            for port_mappings in ports[map_set]:
+                            for port_mappings in ports[map_type]:
                                 map_str += port_mappings.encode()
-                            if ports[map_set][0].to_sort:
+                            if map_type.to_sort:
                                 map_str = dict_line_sort(map_str)
-                            if ports[map_set][0].container:
-                                map_str = ports[map_set][0].container + map_str
-                            if ports[map_set][0].closure:
-                                map_str += ports[map_set][0].closure
-                            with open(ports[map_set][0].in_file, 'a') as ifile:
+                            if map_type.container:
+                                map_str = map_type.container + map_str
+                            if map_type.closure:
+                                map_str += map_type.closure
+                            with open(map_type.in_file, 'a') as ifile:
                                 ifile.write(map_str)
 
 
