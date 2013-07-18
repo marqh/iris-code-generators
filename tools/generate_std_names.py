@@ -70,6 +70,9 @@ STD_NAMES = '''.lstrip()
 
 def process_name_table(tree, element_name, *child_elements):
     """
+    Return specific child information for all elements of a certain name in a
+    parsetree.
+
     Yields a series of dictionaries with the key being the id of the entry
     element and the value containing another dictionary mapping other
     attributes of the standard name to their values,
