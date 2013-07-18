@@ -28,7 +28,7 @@ import metocean.queries as moq
 import metocean.fuseki as fuseki
 import translator.mappings as mappings
 
-HEADER = """# (C) British Crown Copyright 2013, Met Office
+_HEADER = """# (C) British Crown Copyright 2013, Met Office
 #
 # This file is part of Iris.
 #
@@ -46,21 +46,21 @@ HEADER = """# (C) British Crown Copyright 2013, Met Office
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-HEADER += '''
+_HEADER += '''
 # DO NOT EDIT: AUTO-GENERATED
 
 '''
 
 
-ICOL = 'import collections\n'
+_ICOL = 'import collections\n'
 
-CF_TUPLE_DEF = '''
+_CF_TUPLE_DEF = '''
 CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
                                            'unit'])
 '''
 
 
-BUILT_FILES = {'../outputs/um_cf_map.py': [ICOL, CF_TUPLE_DEF], }
+_BUILT_FILES = {'../outputs/um_cf_map.py': [_ICOL, _CF_TUPLE_DEF], }
 
 
 def str_line_sort(st):
@@ -93,9 +93,9 @@ def atimer(name):
     yield
     print '{}:'.format(name), '{}s'.format(int(time.time() - start))
 
-iris_format = '<http://www.metarelate.net/metOcean/format/cf>'
+_IRIS_FORMAT = '<http://www.metarelate.net/metOcean/format/cf>'
 
-formats = ['<http://www.metarelate.net/metOcean/format/um>']
+FORMATS = ['<http://www.metarelate.net/metOcean/format/um>']
 
 
 def main():
@@ -106,12 +106,12 @@ def main():
     with fuseki.FusekiServer(3333) as fu_p:
         # generate translations
         format_maps = {}
-        for fformat in formats:
+        for fformat in FORMATS:
             print fformat, ' retrieving: '
             format_maps[fformat] = {'import': {}, 'export': {}}
             with atimer('imp retrieve_mappings'):
                 # return the list of valid mapping from fformat to CF
-                imports = fu_p.retrieve_mappings(fformat, iris_format)
+                imports = fu_p.retrieve_mappings(fformat, _IRIS_FORMAT)
             with atimer('imp make_mappings'):
                 # identify types for these mappings
                 imp_maps = [mappings.make_mapping(amap, fu_p) for
@@ -121,7 +121,7 @@ def main():
                     format_maps[fformat]['import'][g_type] = list(grp)
             with atimer('exp retrieve mappings'):
                 # return the list of valid mapping from CF to fformat
-                exports = fu_p.retrieve_mappings(iris_format, fformat)
+                exports = fu_p.retrieve_mappings(_IRIS_FORMAT, fformat)
             with atimer('exp make_mappings'):
                 # identify types for these mappings
                 exp_maps = [mappings.make_mapping(amap, fu_p)
@@ -130,14 +130,14 @@ def main():
                 for g_type, grp in itertools.groupby(exp_maps, key=type):
                     format_maps[fformat]['export'][g_type] = list(grp)
             print len(imports), ' imports, ', len(exports), 'exports'
-        for afile in BUILT_FILES:
+        for afile in _BUILT_FILES:
             f = open(afile, 'w')
-            f.write(HEADER)
-            for extras in BUILT_FILES[afile]:
+            f.write(_HEADER)
+            for extras in _BUILT_FILES[afile]:
                 f.write(extras)
             f.close()
 
-        for fformat in formats:
+        for fformat in FORMATS:
             # export translations to python code
             for direction in ['import', 'export']:
                 with atimer('writing {}, {}'.format(fformat, direction)):
@@ -147,12 +147,12 @@ def main():
                     for map_type in pkeys:
                         print direction
                         print map_type.__name__
-                        if map_type is None:
+                        if isinstance(None, map_type):
                             ec = 'Some {} {} mappings not categorised'
                             ec = ec.format(fformat, direction)
                             print ec
                         else:
-                            if map_type.in_file not in BUILT_FILES:
+                            if map_type.in_file not in _BUILT_FILES:
                                 ec = '{} writing to unmanaged file {}'
                                 ec = ec.format(map_type,
                                                map_type.in_file)
