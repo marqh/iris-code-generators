@@ -27,12 +27,13 @@ The definitive source for the XML files is:
 """
 
 import argparse
+import datetime
 import pprint
 import xml.etree.ElementTree as ET
 
 
 STD_VALUES_FILE_TEMPLATE = '''
-# (C) British Crown Copyright 2010 - 2013, Met Office
+# (C) British Crown Copyright 2010 - {}, Met Office
 #
 # This file is part of Iris.
 #
@@ -66,6 +67,9 @@ https://github.com/scitools/iris-code-generators
 
 
 STD_NAMES = '''.lstrip()
+
+yr = datetime.datetime.utcnow().year
+STD_VALUES_FILE_TEMPLATE = STD_VALUES_FILE_TEMPLATE.format(yr)
 
 
 def process_name_table(tree, element_name, *child_elements):

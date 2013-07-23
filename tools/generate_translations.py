@@ -19,16 +19,15 @@ Processing of metarelate content to provide Iris encodings for translation
 
 """
 
-
+import datetime
 import itertools
 import time
 from contextlib import contextmanager
 
-import metocean.queries as moq
 import metocean.fuseki as fuseki
 import translator.mappings as mappings
 
-_HEADER = """# (C) British Crown Copyright 2013, Met Office
+_HEADER = """# (C) British Crown Copyright 2012 - {}, Met Office
 #
 # This file is part of Iris.
 #
@@ -50,6 +49,9 @@ _HEADER += '''
 # DO NOT EDIT: AUTO-GENERATED
 
 '''
+
+yr = datetime.datetime.utcnow().year
+_HEADER = _HEADER.format(yr)
 
 
 _ICOL = 'import collections\n'
