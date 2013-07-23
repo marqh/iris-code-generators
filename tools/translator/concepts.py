@@ -22,7 +22,7 @@ Classes for types of metarelate concept, with a factory for creating instances
 
 import metocean.queries as moq
 
-OPEQ = '<http://www.openmath.org/cd/relation1.xhtml#eq>'
+_OPEQ = '<http://www.openmath.org/cd/relation1.xhtml#eq>'
 
 
 def make_concept(definition, fu_p):
@@ -97,7 +97,7 @@ class StashConcept(Concept):
             name = properties[0].get('mr:name')
             stashname = name and name == F3STASH
             operator = properties[0].get('mr:operator')
-            op_eq = operator and operator == OPEQ
+            op_eq = operator and operator == _OPEQ
             stash = stashval and stashname and op_eq
         else:
             stash = False
@@ -133,7 +133,7 @@ class FieldcodeConcept(Concept):
             name = properties[0].get('mr:name')
             fieldname = name and name == F3FIELD
             operator = properties[0].get('mr:operator')
-            op_eq = operator and operator == OPEQ
+            op_eq = operator and operator == _OPEQ
             fieldcode = fieldval and fieldname and op_eq
         else:
             fieldcode = False
@@ -179,7 +179,7 @@ class CFPhenomDefConcept(Concept):
                 op = prop.get('mr:operator')
                 name = prop.get('mr:name', '')
                 value = prop.get('rdf:value')
-                if op and value and op == OPEQ:
+                if op and value and op == _OPEQ:
                     if not define.get(name):
                         define[name] = value
             cfc = 'http://def.cfconventions.org/datamodel/'
