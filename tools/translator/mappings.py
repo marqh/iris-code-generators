@@ -80,7 +80,7 @@ class StashCFMapping(Mapping):
     """
     in_file = '../outputs/um_cf_map.py'
     container = '\nSTASH_TO_CF = {'
-    closure = '\n\t}\n'
+    closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
@@ -92,7 +92,7 @@ class StashCFMapping(Mapping):
     def encode(self):
         stash = self.source.notation()
         cfsname, lname, units = self.target.notation()
-        str_elem = '\t{stash} : CFname({cfsname}, {lname}, {units}),\n'
+        str_elem = '    {stash}: CFname({cfsname}, {lname}, {units}),\n'
         str_elem = str_elem.format(stash=stash, cfsname=cfsname,
                                    lname=lname, units=units)
         return str_elem
@@ -116,7 +116,7 @@ class FieldcodeCFMapping(Mapping):
     """
     in_file = '../outputs/um_cf_map.py'
     container = '\nLBFC_TO_CF = {'
-    closure = '\n\t}\n'
+    closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
@@ -127,7 +127,7 @@ class FieldcodeCFMapping(Mapping):
     def encode(self):
         fc = self.source.notation()
         cfsname, lname, units = self.target.notation()
-        str_elem = '\t{fc} : CFname({cfsname}, {lname}, {units}),\n'
+        str_elem = '    {fc}: CFname({cfsname}, {lname}, {units}),\n'
         str_elem = str_elem.format(fc=fc, cfsname=cfsname,
                                    lname=lname, units=units)
         return str_elem
@@ -151,7 +151,7 @@ class CFFieldcodeMapping(Mapping):
     """
     in_file = '../outputs/um_cf_map.py'
     container = '\nCF_TO_LBFC = {'
-    closure = '\n\t}\n'
+    closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
@@ -162,7 +162,7 @@ class CFFieldcodeMapping(Mapping):
     def encode(self):
         fc = self.target.notation()
         cfsname, lname, units = self.source.notation()
-        str_elem = '\tCFname({cfsname}, {lname}, {units}) : {fc},\n'
+        str_elem = '    CFname({cfsname}, {lname}, {units}): {fc},\n'
         try:
             str_elem = str_elem.format(fc=fc, cfsname=cfsname, units=units)
         except KeyError:
