@@ -43,7 +43,7 @@ _HEADER = """# (C) British Crown Copyright 2012 - {}, Met Office
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # DO NOT EDIT: AUTO-GENERATED
 
 """
