@@ -23,6 +23,30 @@ Classes for types of mapping, with a factory for creating instances
 import concepts
 
 
+def _str_line_sort(st):
+    """Helper function to sort a multi line string alphabetically"""
+    sort_st = st.split('\n')
+    sort_st.sort()
+    st = '\n'.join(sort_st)
+    return st
+
+
+def _dict_line_sort(st):
+    """Helper function to sort a multi line string numerically, if porssible,
+    then alphabetically as a reserve
+
+    """
+    sort_st = st.split('\n')[0:-2]
+    try:
+        sort_st.sort(
+            key=lambda str: int(str.split(':')[0].strip().replace('"', '')))
+        st = '\n'.join(sort_st)
+    except ValueError:
+        st = _str_line_sort(st)
+    return st
+
+
+
 def make_mapping(mapping, fu_p):
     """
     Mapping object factory
@@ -56,10 +80,10 @@ class Mapping(object):
     """
     abstract Mapping class
     """
-    in_file = None
-    container = None
-    closure = None
-    to_sort = None
+    in_file = ''
+    _container = ''
+    _closure = ''
+    to_sort = False
 
     def __init__(self, amap, source, target, fu_p):
         return NotImplemented
@@ -70,6 +94,17 @@ class Mapping(object):
     def type_match(definition):
         return NotImplemented
 
+    @classmethod
+    def encode_mappings(cls, mapping_list):
+        map_str = ''
+        for port_mappings in mapping_list:
+            map_str += port_mappings.encode()
+        if cls.to_sort:
+            map_str = _dict_line_sort(map_str)
+        map_str = cls._container + map_str
+        map_str += cls._closure
+        return map_str
+
 
 class StashCFMapping(Mapping):
     """
@@ -79,8 +114,8 @@ class StashCFMapping(Mapping):
 
     """
     in_file = '../outputs/um_cf_map.py'
-    container = '\nSTASH_TO_CF = {'
-    closure = '\n    }\n'
+    _container = '\nSTASH_TO_CF = {'
+    _closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
@@ -115,8 +150,8 @@ class FieldcodeCFMapping(Mapping):
 
     """
     in_file = '../outputs/um_cf_map.py'
-    container = '\nLBFC_TO_CF = {'
-    closure = '\n    }\n'
+    _container = '\nLBFC_TO_CF = {'
+    _closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
@@ -150,8 +185,8 @@ class CFFieldcodeMapping(Mapping):
 
     """
     in_file = '../outputs/um_cf_map.py'
-    container = '\nCF_TO_LBFC = {'
-    closure = '\n    }\n'
+    _container = '\nCF_TO_LBFC = {'
+    _closure = '\n    }\n'
     to_sort = True
 
     def __init__(self, amap, source, target, fu_p):
