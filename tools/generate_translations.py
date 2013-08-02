@@ -63,28 +63,6 @@ CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
 _BUILT_FILES = {'../outputs/um_cf_map.py': [_ICOL, _CF_TUPLE_DEF], }
 
 
-def str_line_sort(st):
-    """Helper function to sort a multi line string alphabetically"""
-    sort_st = st.split('\n')
-    sort_st.sort()
-    st = '\n'.join(sort_st)
-    return st
-
-
-def dict_line_sort(st):
-    """Helper function to sort a multi line string numerically, if porssible,
-    then alphabetically as a reserve
-
-    """
-    sort_st = st.split('\n')[0:-2]
-    try:
-        sort_st.sort(
-            key=lambda str: int(str.split(':')[0].strip().replace('"', '')))
-        st = '\n'.join(sort_st)
-    except ValueError:
-        st = str_line_sort(st)
-    return st
-
 
 @contextmanager
 def atimer(name):
@@ -157,15 +135,7 @@ def main():
                                 ec = ec.format(map_type,
                                                map_type.in_file)
                                 raise ValueError(ec)
-                            map_str = ''
-                            for port_mappings in ports[map_type]:
-                                map_str += port_mappings.encode()
-                            if map_type.to_sort:
-                                map_str = dict_line_sort(map_str)
-                            if map_type.container:
-                                map_str = map_type.container + map_str
-                            if map_type.closure:
-                                map_str += map_type.closure
+                            map_str = map_type.encode_mappings(ports[map_type])
                             with open(map_type.in_file, 'a') as ifile:
                                 ifile.write(map_str)
 
