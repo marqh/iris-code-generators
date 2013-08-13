@@ -46,7 +46,6 @@ def _dict_line_sort(st):
     return st
 
 
-
 def make_mapping(mapping):
     """
     Mapping object factory
@@ -113,7 +112,7 @@ class StashCFMapping(Mapping):
     for a UM STASH code translating to a CF standard name and unit
 
     """
-    in_file = '../outputs/um_cf_map.py'
+    in_file = '../outputs/iris/fileformats/um_cf_map.py'
     _container = '\nSTASH_TO_CF = {'
     _closure = '\n    }\n'
     to_sort = True
@@ -148,7 +147,7 @@ class FieldcodeCFMapping(Mapping):
     for a UM field code translating to a CF standard name and unit
 
     """
-    in_file = '../outputs/um_cf_map.py'
+    in_file = '../outputs/iris/fileformats/um_cf_map.py'
     _container = '\nLBFC_TO_CF = {'
     _closure = '\n    }\n'
     to_sort = True
@@ -182,7 +181,7 @@ class CFFieldcodeMapping(Mapping):
     for CF standard name and unit translating to a UM field code
 
     """
-    in_file = '../outputs/um_cf_map.py'
+    in_file = '../outputs/iris/fileformats/um_cf_map.py'
     _container = '\nCF_TO_LBFC = {'
     _closure = '\n    }\n'
     to_sort = True

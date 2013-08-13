@@ -60,8 +60,8 @@ CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
 '''
 
 
-_BUILT_FILES = {'../outputs/um_cf_map.py': [_ICOL, _CF_TUPLE_DEF], }
-
+_BUILT_FILES = {'../outputs/iris/fileformats/um_cf_map.py': [_ICOL,
+                                                             _CF_TUPLE_DEF], }
 
 
 @contextmanager
