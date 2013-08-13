@@ -47,7 +47,7 @@ def _dict_line_sort(st):
 
 
 
-def make_mapping(mapping, fu_p):
+def make_mapping(mapping):
     """
     Mapping object factory
     selects the appropriate subclass for the provided inputs
@@ -57,8 +57,8 @@ def make_mapping(mapping, fu_p):
         an instance of a Mapping or None
 
     """
-    source = concepts.make_concept(mapping.get('mr:source'), fu_p)
-    target = concepts.make_concept(mapping.get('mr:target'), fu_p)
+    source = concepts.make_concept(mapping.get('mr:source'))
+    target = concepts.make_concept(mapping.get('mr:target'))
     matched_types = [mapping_type
                      for mapping_type in Mapping.__subclasses__()
                      if mapping_type.type_match(source, target)]
@@ -72,7 +72,7 @@ def make_mapping(mapping, fu_p):
             print ec.format(','.join(matched_types))
             mapping = None
     else:
-        mapping = matched_types[0](mapping, source, target, fu_p)
+        mapping = matched_types[0](mapping, source, target)
     return mapping
 
 
@@ -85,20 +85,20 @@ class Mapping(object):
     _closure = ''
     to_sort = False
 
-    def __init__(self, amap, source, target, fu_p):
+    def __init__(self, amap, source, target):
         return NotImplemented
 
-    def encode(self):
+    def encode(self, fu_p):
         return NotImplemented
 
     def type_match(definition):
         return NotImplemented
 
     @classmethod
-    def encode_mappings(cls, mapping_list):
+    def encode_mappings(cls, mapping_list, fu_p):
         map_str = ''
         for port_mappings in mapping_list:
-            map_str += port_mappings.encode()
+            map_str += port_mappings.encode(fu_p)
         if cls.to_sort:
             map_str = _dict_line_sort(map_str)
         map_str = cls._container + map_str
@@ -118,15 +118,14 @@ class StashCFMapping(Mapping):
     _closure = '\n    }\n'
     to_sort = True
 
-    def __init__(self, amap, source, target, fu_p):
+    def __init__(self, amap, source, target):
         self.source = source
         self.target = target
         self.valuemaps = amap.get('mr:hasValueMaps')
-        self.fu_p = fu_p
 
-    def encode(self):
-        stash = self.source.notation()
-        cfsname, lname, units = self.target.notation()
+    def encode(self, fu_p):
+        stash = self.source.notation(fu_p)
+        cfsname, lname, units = self.target.notation(fu_p)
         str_elem = '    {stash}: CFname({cfsname}, {lname}, {units}),\n'
         str_elem = str_elem.format(stash=stash, cfsname=cfsname,
                                    lname=lname, units=units)
@@ -154,14 +153,13 @@ class FieldcodeCFMapping(Mapping):
     _closure = '\n    }\n'
     to_sort = True
 
-    def __init__(self, amap, source, target, fu_p):
+    def __init__(self, amap, source, target):
         self.source = source
         self.target = target
-        self.fu_p = fu_p
 
-    def encode(self):
-        fc = self.source.notation()
-        cfsname, lname, units = self.target.notation()
+    def encode(self, fu_p):
+        fc = self.source.notation(fu_p)
+        cfsname, lname, units = self.target.notation(fu_p)
         str_elem = '    {fc}: CFname({cfsname}, {lname}, {units}),\n'
         str_elem = str_elem.format(fc=fc, cfsname=cfsname,
                                    lname=lname, units=units)
@@ -189,14 +187,13 @@ class CFFieldcodeMapping(Mapping):
     _closure = '\n    }\n'
     to_sort = True
 
-    def __init__(self, amap, source, target, fu_p):
+    def __init__(self, amap, source, target):
         self.source = source
         self.target = target
-        self.fu_p = fu_p
 
-    def encode(self):
-        fc = self.target.notation()
-        cfsname, lname, units = self.source.notation()
+    def encode(self, fu_p):
+        fc = self.target.notation(fu_p)
+        cfsname, lname, units = self.source.notation(fu_p)
         str_elem = '    CFname({cfsname}, {lname}, {units}): {fc},\n'
         try:
             str_elem = str_elem.format(fc=fc, cfsname=cfsname, units=units)

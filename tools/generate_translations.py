@@ -92,7 +92,7 @@ def main():
                 imports = fu_p.retrieve_mappings(fformat, _IRIS_FORMAT)
             with atimer('imp make_mappings'):
                 # identify types for these mappings
-                imp_maps = [mappings.make_mapping(amap, fu_p) for
+                imp_maps = [mappings.make_mapping(amap) for
                             amap in imports]
                 imp_maps.sort(key=type)
                 for g_type, grp in itertools.groupby(imp_maps, key=type):
@@ -102,7 +102,7 @@ def main():
                 exports = fu_p.retrieve_mappings(_IRIS_FORMAT, fformat)
             with atimer('exp make_mappings'):
                 # identify types for these mappings
-                exp_maps = [mappings.make_mapping(amap, fu_p)
+                exp_maps = [mappings.make_mapping(amap)
                             for amap in exports]
                 exp_maps.sort(key=type)
                 for g_type, grp in itertools.groupby(exp_maps, key=type):
@@ -135,7 +135,8 @@ def main():
                                 ec = ec.format(map_type,
                                                map_type.in_file)
                                 raise ValueError(ec)
-                            map_str = map_type.encode_mappings(ports[map_type])
+                            map_str = map_type.encode_mappings(ports[map_type],
+                                                               fu_p)
                             with open(map_type.in_file, 'a') as ifile:
                                 ifile.write(map_str)
 
