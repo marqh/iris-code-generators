@@ -54,14 +54,29 @@ _HEADER = _HEADER.format(yr)
 
 _ICOL = 'import collections\n'
 
-_CF_TUPLE_DEF = '''
+_CF_TUPLES = '''
 CFname = collections.namedtuple('CFname', ['standard_name', 'long_name',
                                            'unit'])
 '''
 
+_GRIB_TUPLES = '''
+G2param = collections.namedtuple('G2param', ['edition', 'discipline',
+                                             'category', 'number'])
 
-_BUILT_FILES = {'../outputs/iris/fileformats/um_cf_map.py': [_ICOL,
-                                                             _CF_TUPLE_DEF], }
+G1Lparam = collections.namedtuple('G1Lparam', ['edition', 't2version',
+                                               'centre', 'iParam'])
+
+DimensionCoordinate = collections.namedtuple('DimensionCoordinate',
+                                             ['standard_name',
+                                             'units', 'points'])
+
+'''
+
+OPATH = '../outputs/iris/fileformats/'
+
+_BUILT_FILES = {'{}um_cf_map.py'.format(OPATH): [_ICOL, _CF_TUPLES],
+                '{}grib/_grib_cf_map.py'.format(OPATH): [_ICOL, _GRIB_TUPLES,
+                                                          _CF_TUPLES],}
 
 
 @contextmanager
@@ -73,7 +88,8 @@ def atimer(name):
 
 _IRIS_FORMAT = '<http://www.metarelate.net/metOcean/format/cf>'
 
-FORMATS = ['<http://www.metarelate.net/metOcean/format/um>']
+FORMATS = ['<http://www.metarelate.net/metOcean/format/um>',
+           '<http://www.metarelate.net/metOcean/format/grib>',]
 
 
 def main():
