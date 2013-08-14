@@ -89,6 +89,12 @@ def main():
             format_maps[fformat] = {'import': {}, 'export': {}}
             with atimer('imp retrieve_mappings'):
                 # return the list of valid mapping from fformat to CF
+                # return the list of valid mapping from fformat to CF
+                # a mapping is a json structure of the form:
+                #  {mapping: <id>, source: <aConcept>, target: <aConcept>,
+                #   invertible: <boolean>}
+                # a concept is a json structure of the form:
+                #  {concept: <id>, properties: [{name: <name>, value: <value>}]
                 imports = fu_p.retrieve_mappings(fformat, _IRIS_FORMAT)
             with atimer('imp make_mappings'):
                 # identify types for these mappings
@@ -121,7 +127,7 @@ def main():
                 with atimer('writing {}, {}'.format(fformat, direction)):
                     ports = format_maps[fformat][direction]
                     pkeys = ports.keys()
-                    pkeys.sort(reverse=True, key=lambda acls: acls.__name__)
+                    pkeys.sort(key=lambda acls: acls.__name__)
                     for map_type in pkeys:
                         print direction
                         print map_type.__name__
