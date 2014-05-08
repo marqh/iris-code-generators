@@ -95,12 +95,12 @@ order by ?stash'''
     out_format = '&output=json'
     url = baseurl + encquery + out_format
 
-
     response = urllib2.urlopen(url)
     stash = json.loads(response.read())
 
+    ## heads will be of the form [u'stash', u'grid', u'lbfcn']
+    ## as defined in the query string
     heads = stash['head']['vars']
-    ## [u'stash', u'grid', u'lbfcn']
 
     stashcodes = []
 
