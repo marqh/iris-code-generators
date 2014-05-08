@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris-code-generators.  If not, see <http://www.gnu.org/licenses/>.
 
-import metarelate.fuseki as fuseki
+import json
+import urllib
+import urllib2
+
 from iris.fileformats.pp import STASH
 
 import gen_helpers
@@ -23,7 +26,7 @@ import gen_helpers
 
 HEADER = '''
 """
-Auto-generated from SciTools/iris-code-generators:tools/gen_stash_refs.py
+Auto-generated from iris/tools/gen_stash_refs.py
 Relates grid code and field code to the stash code.
 
 """
@@ -49,49 +52,68 @@ def write_cross_reference_module(module_path, xrefs):
                        '"m??s??i???" form: {}'.format(stash))
                 print msg
             grid = xref.get('grid')
-            try:
-                int(grid)
-            except ValueError:
-                msg = ('grid code retrieved from STASH lookup'
-                       'is not an interger: {}'.format(grid))
-                print msg
+            if grid is not None:
+                try:
+                    int(grid)
+                except ValueError:
+                    msg = ('grid code retrieved from STASH lookup'
+                           'is not an interger: {}'.format(grid))
+                    print msg
+            else:
+                grid = 0
             lbfc = xref.get('lbfcn')
             try:
                 int(lbfc)
             except (ValueError, TypeError):
                 lbfc = 0
             module_file.write(
-                "    {}: Stash({}, {}),\n".format(stash, grid, lbfc))
+                '    "{}": Stash({}, {}),\n'.format(stash, grid, lbfc))
         module_file.write('}\n')
 
 
-def stash_grid_codes(fu_p):
-    query = '''
-    SELECT ?stash ?grid ?lbfcn
-    WHERE
-    {
-      GRAPH <http://um/stashconcepts.ttl>
-        {
-          ?stashcode moumdpC4:Grid ?grid ;
-          <http://www.w3.org/2004/02/skos/core#notation> ?stash .
-          OPTIONAL {?stashcode moumdpC4:PPFC ?lbfc .}
-        }
-      OPTIONAL
-      {
-        GRAPH <http://um/fieldcode.ttl>
-          {
-            ?lbfc <http://www.w3.org/2004/02/skos/core#notation> ?lbfcn
-          }
-      }
-    }
-    order by ?stashcode
-    '''
-    xrefs = fu_p.run_query(query)
-    return xrefs
+def stash_grid_retrieve():
+    """return a dictionary of stash codes and rel;ated information from
+    the Met Office Reference Registry
+    """
+    baseurl = 'http://reference.metoffice.gov.uk/system/query?query='
+    query = '''prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
 
+SELECT ?stash ?grid ?lbfcn
+WHERE {
+  ?stashcode rdf:type <http://reference.metoffice.gov.uk/um/c4/stash/Stash> ;
+  skos:notation ?stash ;
+  <http://reference.metoffice.gov.uk/um/c4/stash/grid> ?gridcode .
+OPTIONAL { ?gridcode skos:notation ?grid .}
+OPTIONAL {?stashcode <http://reference.metoffice.gov.uk/um/c4/stash/ppfc> ?lbfc .
+         ?lbfc skos:notation ?lbfcn .}
+}
+order by ?stash'''
+    
+    encquery = urllib.quote_plus(query)
+    out_format = '&output=json'
+    url = baseurl + encquery + out_format
+
+
+    response = urllib2.urlopen(url)
+    stash = json.loads(response.read())
+
+    heads = stash['head']['vars']
+    ## [u'stash', u'grid', u'lbfcn']
+
+    stashcodes = []
+
+    for result in stash['results']['bindings']:
+        res = {}
+        for head in heads:
+            if result.has_key(head):
+                res[head] = result[head]['value']
+        stashcodes.append(res)
+    return stashcodes
+    
 
 if __name__ == '__main__':
-    with fuseki.FusekiServer() as fu_p:
-        xrefs = stash_grid_codes(fu_p)
-        outfile = '../outputs/iris/fileformats/_ff_cross_references.py'
-        write_cross_reference_module(outfile, xrefs)
+    xrefs = stash_grid_retrieve()
+    outfile = '../outputs/iris/fileformats/_ff_cross_references.py'
+    write_cross_reference_module(outfile, xrefs)
